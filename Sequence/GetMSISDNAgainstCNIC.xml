@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="GetMSISDNAgainstCNIC">
+   <log level="full">
+      <property name="property_nameFirst" value="INSIDE GetMSISDNAgainstCNIC"/>
+   </log>
+   <dblookup>
+      <connection>
+         <pool>
+            <dsName>jdbc/mastg</dsName>
+         </pool>
+      </connection>
+      <statement>
+         <sql>SELECT ID FROM MRHA.TMX_AGENT WHERE CNIC=?</sql>
+         <parameter xmlns:ns="http://org.apache.synapse/xsd"
+                    expression="$ctx:Op_CNIC"
+                    type="VARCHAR"/>
+         <result name="Agent_ID" column="1"/>
+      </statement>
+   </dblookup>
+   <log level="custom">
+      <property xmlns:ns="http://org.apache.synapse/xsd"
+                name="Agent_ID"
+                expression="$ctx:Agent_ID"/>
+   </log>
+   <filter xmlns:ns="http://org.apache.synapse/xsd" xpath="$ctx:Agent_ID !=''">
+      <then>
+         <dblookup>
+            <connection>
+               <pool>
+                  <dsName>jdbc/mastg</dsName>
+               </pool>
+            </connection>
+            <statement>
+               <sql>SELECT MSISDN_ID FROM MRHA.TMX_AGENT_MSISDN WHERE AGENT_ID=?</sql>
+               <parameter expression="$ctx:Agent_ID" type="VARCHAR"/>
+               <result name="Msisdn_ID" column="1"/>
+            </statement>
+         </dblookup>
+         <log level="custom">
+            <property name="Msisdn_ID" expression="$ctx:Msisdn_ID"/>
+         </log>
+         <filter xpath="$ctx:Msisdn_ID !=''">
+            <then>
+               <dblookup>
+                  <connection>
+                     <pool>
+                        <dsName>jdbc/mastg</dsName>
+                     </pool>
+                  </connection>
+                  <statement>
+                     <sql>SELECT MSISDN FROM MRHA.TMX_MSISDN WHERE ID=?</sql>
+                     <parameter expression="$ctx:Msisdn_ID" type="VARCHAR"/>
+                     <result name="Msisdn" column="1"/>
+                  </statement>
+               </dblookup>
+               <log level="custom">
+                  <property name="Msisdn" expression="$ctx:Msisdn"/>
+               </log>
+               <filter xpath="$ctx:Msisdn !=''">
+                  <then>
+                     <property name="Status" value="OK"/>
+                     <property name="Reason" expression="$ctx:Agent_ID"/>
+                     <property name="MSISDN" expression="$ctx:Msisdn"/>
+                  </then>
+                  <else>
+                     <property name="Status" value="KO"/>
+                     <property name="Reason" value="No MSISDN Exists"/>
+                     <property name="MSISDN" value=""/>
+                  </else>
+               </filter>
+            </then>
+            <else>
+               <property name="Status" value="KO"/>
+               <property name="Reason" value="No MSISDN_ID Exists"/>
+               <property name="MSISDN" value=""/>
+            </else>
+         </filter>
+      </then>
+      <else>
+         <property name="Status" value="KO"/>
+         <property name="Reason" value="No AgentID Exists"/>
+         <property name="MSISDN" value=""/>
+      </else>
+   </filter>
+</sequence>

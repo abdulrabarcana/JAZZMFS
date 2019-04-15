@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="LogRequestNadra">
+   <log level="full">
+      <property name="property_nameFirst" value="INSIDE Log Request"/>
+   </log>
+   <property xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"
+             xmlns:ns3="http://org.apache.synapse/xsd"
+             name="DateTime"
+             expression="get-property('SYSTEM_DATE','yyyyMMddHHmmss')"/>
+   <property name="TRANSACTIONTYPE" value="Biometric-MA"/>
+   <property xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"
+             xmlns:ns3="http://org.apache.synapse/xsd"
+             name="TRANSACTIONDATE"
+             expression="$ctx:DateTime"/>
+   <property xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"
+             xmlns:ns3="http://org.apache.synapse/xsd"
+             name="SOURCETRANSACTIONID"
+             expression="$ctx:TransactionId"/>
+   <property xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"
+             xmlns:ns3="http://org.apache.synapse/xsd"
+             name="OPERATORCNIC"
+             expression="$ctx:Op_CNIC"/>
+   <property xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"
+             xmlns:ns3="http://org.apache.synapse/xsd"
+             name="OPERATORIMEI"
+             expression="$ctx:OP_IMEI"/>
+   <property name="OPERATORMSISDN" value=""/>
+   <property xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"
+             xmlns:ns3="http://org.apache.synapse/xsd"
+             name="CUSTOMERCNIC"
+             expression="$ctx:C_CNIC"/>
+   <property xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"
+             xmlns:ns3="http://org.apache.synapse/xsd"
+             name="CUSTOMERMSISDN"
+             expression="$ctx:C_MSISDN"/>
+   <class name="com.arcana.biometric.LogBiometricRequest"/>
+   <property xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"
+             xmlns:ns3="http://org.apache.synapse/xsd"
+             name="Status"
+             expression="$ctx:STATUS"/>
+   <property xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"
+             xmlns:ns3="http://org.apache.synapse/xsd"
+             name="Reason"
+             expression="$ctx:REASON"/>
+</sequence>

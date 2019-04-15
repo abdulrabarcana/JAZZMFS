@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="BiometricDeviceVerification" xmlns="http://ws.apache.org/ns/synapse">
+    <log level="full">
+        <property name="property_nameFirst" value="INSIDE Biometric Device Verification"/>
+    </log>
+    <dblookup>
+        <connection>
+            <pool>
+                <dsName>jdbc/mfsstg</dsName>
+            </pool>
+        </connection>
+        <statement>
+            <sql><![CDATA[SELECT ID FROM MRHA.TMX_AGENT WHERE CNIC=?]]></sql>
+            <parameter expression="$ctx:Op_CNIC" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <result column="1" name="ID"/>
+        </statement>
+    </dblookup>
+    <log level="custom">
+        <property expression="$ctx:ID" name="ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+    </log>
+    <filter regex="true" source="boolean($ctx:ID)" xmlns:ns="http://org.apache.synapse/xsd">
+        <then>
+            <dblookup>
+                <connection>
+                    <pool>
+                        <dsName>jdbc/mfsstg</dsName>
+                    </pool>
+                </connection>
+                <statement>
+                    <sql><![CDATA[SELECT ID FROM MRHA.TMX_DEVICE WHERE IMEI=?]]></sql>
+                    <parameter expression="$ctx:OP_IMEI" type="VARCHAR"/>
+                    <result column="1" name="Device_ID"/>
+                </statement>
+            </dblookup>
+            <log level="custom">
+                <property expression="$ctx:Device_ID" name="Device_ID"/>
+            </log>
+            <filter regex="true" source="boolean($ctx:Device_ID)">
+                <then>
+                    <dblookup>
+                        <connection>
+                            <pool>
+                                <dsName>jdbc/mfsstg</dsName>
+                            </pool>
+                        </connection>
+                        <statement>
+                            <sql><![CDATA[SELECT DEVICE_ID FROM MRHA.TMX_AGENT_DEVICES WHERE AGENT_ID=?]]></sql>
+                            <parameter expression="$ctx:ID" type="VARCHAR"/>
+                            <result column="1" name="TMX_Device_ID"/>
+                        </statement>
+                    </dblookup>
+                    <log level="custom">
+                        <property expression="$ctx:TMX_Device_ID" name="TMX_Device_ID"/>
+                    </log>
+                    <filter xpath="$ctx:TMX_Device_ID = $ctx:Device_ID">
+                        <then>
+                            <property name="Status" value="OK"/>
+                            <property name="Reason" value=""/>
+                        </then>
+                        <else>
+                            <property name="Status" value="KO"/>
+                            <property
+                                expression="fn:concat('Device ',$ctx:OP_IMEI,' not registered against CNIC : ',$ctx:Op_CNIC)" name="Reason"/>
+                        </else>
+                    </filter>
+                </then>
+                <else>
+                    <property name="Status" value="KO"/>
+                    <property
+                        expression="fn:concat('Device ',$ctx:OP_IMEI,' not registered against CNIC :',$ctx:Op_CNIC)" name="Reason"/>
+                </else>
+            </filter>
+        </then>
+        <else>
+            <property name="Status" value="KO"/>
+            <property name="Reason" value="No AgentID Exists"/>
+        </else>
+    </filter>
+</sequence>

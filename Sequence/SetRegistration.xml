@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="SetRegistration" xmlns="http://ws.apache.org/ns/synapse">
+    <log level="full">
+        <property name="property_nameFirst" value="INSIDE Set Registration"/>
+    </log>
+    <property name="CheckStatusFlag" value="1"/>
+    <filter regex="1" source="CheckStatusFlag" xmlns:ns="http://org.apache.synapse/xsd">
+        <then>
+            <property expression="$ctx:NewRegistration_Status" name="Status"/>
+            <property expression="$ctx:NewRegistration_Reason" name="Reason"/>
+        </then>
+    </filter>
+    <filter xmlns:ns="http://org.apache.synapse/xsd" xpath="$ctx:STC_Nadra_Status !='SUCCESS'">
+        <then>
+            <property name="Status" value="KO"/>
+            <property
+                expression="fn:concat('Error At Securetech Nadra | ',$ctx:STC_Nadra_ErrorDescription)" name="Reason"/>
+        </then>
+    </filter>
+    <filter regex="KO" source="$ctx:GetMSISDNAgainstCNIC_Status" xmlns:ns="http://org.apache.synapse/xsd">
+        <then>
+            <property name="Status" value="KO"/>
+            <property
+                expression="fn:concat('Error at MFS-MSISDNStatus |',$ctx:GetMSISDNAgainstCNIC_Reason)" name="Reason"/>
+        </then>
+    </filter>
+    <filter regex="KO" source="$ctx:BiometricDeviceVerification_Status" xmlns:ns="http://org.apache.synapse/xsd">
+        <then>
+            <property name="Status" value="KO"/>
+            <property
+                expression="$ctx:BiometricDeviceVerification_Reason" name="Reason"/>
+        </then>
+    </filter>
+    <filter regex="KO" source="$ctx:CheckNewOrUpdateStatus" xmlns:ns="http://org.apache.synapse/xsd">
+        <then>
+            <property name="Status" value="KO"/>
+            <property
+                expression="fn:concat('Error while checking New/Frozen from Huawei |',$ctx:CheckNewOrUpdateReason)" name="Reason"/>
+        </then>
+    </filter>
+</sequence>

@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy xmlns="http://ws.apache.org/ns/synapse" name="InvokeRequestConfirmOMNO" startOnLoad="true" statistics="disable" trace="disable" transports="http,https">
+	<target>
+		<inSequence>
+			<log level="custom">
+				<property name="Start Proxy" value="In InvokeRequestConfirmOMNO"/>
+			</log>
+			<log level="custom">
+				<property name="call" value="*******"/>
+				<property expression="get-property('SYSTEM_DATE','yyyyMMddHHmmss')" name="OrderID"/>
+				<property expression="$ctx:LOG_REQUEST" name="Request"/>
+			</log>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Initiator/sch:IdentifierType" name="IdentifierType" scope="default" type="STRING"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Transaction/sch:Parameters" name="Params" scope="default" type="OM"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Initiator/sch:Identifier" name="Identifier" scope="default" type="STRING"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Initiator/sch:SecurityCredential" name="SecurityCredential" scope="default" type="STRING"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Transaction/sch:CommandID" name="CommandID" scope="default" type="STRING"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Transaction/sch:ConversationID" name="ConversationID" scope="default" type="STRING"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Transaction/sch:Parameters" name="Parameters" scope="default" type="STRING"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:ReceiverParty/sch:IdentifierType" name="PartyIdentifierType" scope="default" type="STRING"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:ReceiverParty/sch:Identifier" name="PArtyIdentifier" scope="default" type="STRING"/>
+			<property name="CallerType" value="2"/>
+			<property name="ThirdPartyID" value="POS_Broker"/>
+			<property name="Password" value="R8HNnLOiLzI="/>
+			<property name="ResultUrl" value="http://10.227.23.238:9687/Services/Mobicash/Common/ResponseReceiver"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Transaction/sch:Parameters/Parameter[Key='ChannelCode']/Value" name="key" scope="default" type="STRING"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Transaction/sch:Parameters/Parameter[Key='TransID']/Value" name="Value"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Transaction/sch:Parameters/Parameter[Key='IsSuccess']/Value" name="IsSuccess"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Transaction/sch:Parameters/Parameter[Key='Amount']/Value" name="Amount"/>
+			<property description="TransactionID" expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="UniqueID" scope="default" type="STRING"/>
+			<property xmlns:fn="http://www.w3.org/2005/xpath-functions" expression="fn:replace(syn:get-property('UniqueID'), '-', '')" name="TRANSACTION_ID"/>
+			<log level="custom">
+				<property expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="UniqueID"/>
+				<property xmlns:fn="http://www.w3.org/2005/xpath-functions" expression="fn:replace(syn:get-property('UniqueID'), '-', '')" name="TRANSACTION_ID"/>
+				<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd3" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//sch:Request/sch:Transaction/sch:Parameters/Parameter[Key='ChannelCode']/Value" name="key"/>
+			</log>
+			<property expression="get-property('SYSTEM_DATE','yyyyMMddHHmmss')" name="Time"/>
+			<payloadFactory media-type="xml">
+				<format>
+					<Request xmlns="">
+						<Identity>
+							<Caller>
+								<CallerType>$1</CallerType>
+								<ThirdPartyID>$2</ThirdPartyID>
+								<Password>$3</Password>
+								<ResultURL>$4</ResultURL>
+							</Caller>
+							<Initiator>
+								<IdentifierType>$5</IdentifierType>
+								<Identifier>$6</Identifier>
+								<SecurityCredential>$7</SecurityCredential>
+							</Initiator>
+						</Identity>
+						<Transaction>
+							<CommandID>$8</CommandID>
+							<ConversationID/>
+							<OriginatorConversationID>$9</OriginatorConversationID>
+							<Parameters/>
+							<Timestamp>$10</Timestamp>
+						</Transaction>
+						<KeyOwner>1</KeyOwner>
+					</Request>
+				</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:CallerType"/>
+					<arg evaluator="xml" expression="$ctx:ThirdPartyID"/>
+					<arg evaluator="xml" expression="$ctx:Password"/>
+					<arg value="http://10.50.13.117:8285/mfsasyncresult/result"/>
+					<arg evaluator="xml" expression="$ctx:IdentifierType"/>
+					<arg evaluator="xml" expression="$ctx:Identifier"/>
+					<arg evaluator="xml" expression="$ctx:SecurityCredential"/>
+					<arg evaluator="xml" expression="$ctx:CommandID"/>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+					<arg evaluator="xml" expression="$ctx:Time"/>
+				</args>
+			</payloadFactory>
+			<log level="custom">
+				<property expression="$ctx:Params/Parameter" name="ParamsinLog"/>
+				<property expression="//Request/Transaction/Parameters" name="ParametersinLog"/>
+			</log>
+			<enrich>
+				<source clone="true" xpath="$ctx:Params/Parameter"/>
+				<target action="child" xpath="//Request/Transaction/Parameters"/>
+			</enrich>
+			<log level="custom">
+				<property expression="//Request" name="ResultPayloadAfterChange"/>
+			</log>
+			<payloadFactory media-type="xml">
+				<format key="conf:/repository/esb/InvokeRequest"/>
+				<args>
+					<arg evaluator="xml" expression="//Request"/>
+				</args>
+			</payloadFactory>
+			<property name="APIName" value="Mobicash"/>
+			<property name="InterfaceName" value="InvokeRequest"/>
+			<property expression="$ctx:Time" name="Timestamo"/>
+			<property expression="$ctx:Identifier" name="MSISDN"/>
+			<property name="ResourceURI" value="http://10.227.22.148:8081/payment/services/RequestMgrService"/>
+			<property expression="$ctx:TransactionID" name="TRANSACTION_ID_Log"/>
+			<property name="SYSTEM_NAME" value="Mobicash"/>
+			<property name="INTERFACE_NAME" value="InvokeRequestConfirmOMNO"/>
+			<property expression="get-property('SYSTEM_DATE','YYYY-MM-dd HH:MM:ss')" name="TIMEIN" scope="default"/>
+			<property description="ID" expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="ID" scope="default" type="STRING"/>
+			<property expression="$ctx:TRANSACTION_ID" name="ORDER_ID"/>
+			<property expression="$ctx:SYSTEM_NAME" name="SYSTEM_NAME"/>
+			<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME"/>
+			<property expression="$ctx:TIMEIN" name="TIMEIN"/>
+			<property expression="$trp:host" name="HOST"/>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target property="LOG_REQUEST" type="property"/>
+			</enrich>
+			<log level="custom">
+				<property expression="$ctx:LOG_REQUEST" name="REQUEST"/>
+			</log>
+			<property expression="$ctx:LOG_REQUEST" name="REQUEST"/>
+			<clone continueParent="true">
+				<target sequence="MFS_LOG_REQUEST_SEQUENCE"/>
+			</clone>
+			<call-template target="MFSParserLogging">
+				<with-param name="Reg_value" value="LOG_REQUEST_SEQUENCE_MFS_LOGGING"/>
+			</call-template>
+			<header name="Action" value="/Services/Mobicash/Interface/InvokeRequest"/>
+			<property name="messageType" value="application/soap+xml"/>
+			<call>
+				<endpoint>
+					<address format="soap12" uri="http://10.50.13.105:8088/mockInvokeRequestConfirmOMNOSoap12Binding">
+						<timeout>
+							<duration>10000</duration>
+							<responseAction>fault</responseAction>
+						</timeout>
+						<suspendOnFailure>
+							<errorCodes>-1</errorCodes>
+							<progressionFactor>1.0</progressionFactor>
+						</suspendOnFailure>
+						<markForSuspension>
+							<errorCodes>-1</errorCodes>
+						</markForSuspension>
+					</address>
+				</endpoint>
+			</call>
+			<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="//req:ResponseMsg" name="CDATAPAYLOAD" type="OM"/>
+			<enrich>
+				<source clone="true" property="CDATAPAYLOAD" type="property"/>
+				<target xmlns:req="http://cps.huawei.com/cpsinterface/request" xpath="//req:ResponseMsg/text()"/>
+			</enrich>
+			<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="$body//req:ResponseMsg/Response/ResponseCode" name="RESPONSE_CODE"/>
+			<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="$body//req:ResponseMsg/Response/ConversationID" name="Response_ConversationID"/>
+			<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="$body//req:ResponseMsg/Response/ResponseDesc" name="Response_ResponseDesc"/>
+			<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="$body//req:ResponseMsg/Response/OriginatorConversationID" name="Response_OriginatorConversationID"/>
+			<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="$body//req:ResponseMsg/Response/ServiceStatus" name="ServiceStatus"/>
+			<log level="custom">
+				<property expression="$ctx:RESPONSE_CODE" name="asyncCode"/>
+			</log>
+			<filter regex="0" source="$ctx:RESPONSE_CODE">
+				<then>
+					<log level="custom">
+						<property name="service" value="Bus Services is called"/>
+					</log>
+					<enrich>
+						<source clone="true" type="body"/>
+						<target property="LOG_RESPONSE_RESULT" type="property"/>
+					</enrich>
+					<log level="custom">
+						<property expression="$ctx:LOG_RESPONSE_RESULT" name="Invoke Request Result Payload"/>
+						<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="$body//req:ResponseMsg/Response/ResultCode" name="ResultCode1"/>
+					</log>
+					<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="$body//req:ResponseMsg/Response/ResponseCode" name="ResultCode"/>
+					<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="//Result/ResultParameters" name="ResultParameters"/>
+					<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="//Result/ReferenceData" name="ReferenceData"/>
+					<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="//Result/TransactionID" name="Tran_ID"/>
+					<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="$body//req:ResponseMsg/Response/ResponseDesc" name="ResponseDesc"/>
+					<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="$body//req:ResponseMsg/Response/OriginatorConversationID" name="C_ID"/>
+					<property name="R_ResultT" value="1"/>
+					<property xmlns:req="http://cps.huawei.com/cpsinterface/request" expression="$body//req:ResponseMsg/Response/ConversationID" name="Con_ID"/>
+					<payloadFactory media-type="xml">
+						<format key="conf:/repository/esb/InvokeRequestOMNOResponse"/>
+						<args>
+							<arg evaluator="xml" expression="$ctx:ResultParameters"/>
+							<arg evaluator="xml" expression="$ctx:ReferenceData"/>
+							<arg evaluator="xml" expression="$ctx:ResultCode"/>
+							<arg evaluator="xml" expression="$ctx:R_ResultT"/>
+							<arg evaluator="xml" expression="$ctx:C_ID"/>
+							<arg evaluator="xml" expression="$ctx:ResponseDesc"/>
+							<arg evaluator="xml" expression="$ctx:Tran_ID"/>
+							<arg evaluator="xml" expression="$ctx:Con_ID"/>
+						</args>
+					</payloadFactory>
+					<property expression="$ctx:asyncResultDesc" name="FailedReason"/>
+					<filter regex="0" source="$ctx:asyncResultDesc">
+						<then>
+							<property name="Status" value="OK"/>
+							<property expression="$ctx:asyncResultDesc" name="Reason"/>
+						</then>
+					</filter>
+				</then>
+				<else>
+					<property name="status" value="KO"/>
+					<property name="Reason" value="Error at Huawei"/>
+				</else>
+			</filter>
+			<property expression="get-property('SYSTEM_DATE','YYYY-MM-dd HH:MM:ss')" name="TIMEOUT" scope="default"/>
+			<property expression="$ctx:TIMEOUT" name="TIMEOUT"/>
+			<property name="STATUS" value="OK"/>
+			<enrich>
+				<source clone="true" type="envelope"/>
+				<target property="LogResquestpayload" type="property"/>
+			</enrich>
+			<log level="custom">
+				<property expression="$ctx:LogResquestpayload" name="RESPONSE"/>
+			</log>
+			<property expression="$ctx:LogResquestpayload" name="RESPONSE"/>
+			<clone continueParent="true">
+				<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+			</clone>
+			<call-template target="MFSParserLogging">
+				<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+			</call-template>
+			<property name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+			<respond/>
+		</inSequence>
+		<faultSequence>
+			<log level="custom">
+				<property name="text" value="**** An unexpected error occured while calling the backend service"/>
+				<property expression="get-property('ERROR_MESSAGE')" name="messageerror"/>
+				<property expression="get-property('ERROR_CODE')" name="message"/>
+				<property expression="get-property('ERROR_DETAIL')" name="message3"/>
+				<property expression="get-property('ERROR_EXCEPTION')" name="message4"/>
+			</log>
+			<property expression="get-property('SYSTEM_DATE','YYYY-MM-dd HH:MM:ss')" name="TrackingId"/>
+			<property expression="get-property('SYSTEM_DATE','YYYY-MM-dd HH:MM:ss')" name="MessageRecordIdconcate"/>
+			<property name="Category" value="DATA"/>
+			<property expression="get-property('ERROR_MESSAGE')" name="messageerror"/>
+			<property expression="get-property('ERROR_CODE')" name="message"/>
+			<property expression="get-property('ERROR_DETAIL')" name="message3"/>
+			<property expression="get-property('ERROR_EXCEPTION')" name="message4"/>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target property="LOG_ERROR" type="property"/>
+			</enrich>
+			<property expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="ID" scope="default" type="STRING"/>
+			<property name="SYSTEM_NAME" value="Mobicash"/>
+			<property name="INTERFACE_NAME" value="InvokeRequestConfirmOMNO"/>
+			<property expression="get-property('SYSTEM_DATE','YYYY-MM-dd  HH:MM:ss')" name="TIMEIN" scope="default"/>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target property="REQUEST" type="property"/>
+			</enrich>
+			<property expression="fn:concat($ctx:TRANSACTION_ID,$ctx:TIMEIN)" name="ORDER_ID"/>
+			<property name="TARGET_SYSTEM_NAME" value="Mobicash"/>
+			<property name="TARGET_INTERFACE_NAME" value="InvokeRequestConfirmOMNO"/>
+			<property expression="$ctx:Identifier" name="MSISDN"/>
+			<script language="js">importPackage(Packages.java.net);	importPackage(Packages.org.apache.log4j);	try {	var addr = InetAddress.getLocalHost();	if (addr != null) {	var hostname = addr.getHostName();	MDC.put("host", hostname);	mc.setProperty("host", hostname);	}	} catch (e) {	}</script>
+			<property expression="$ctx:host" name="HOST"/>
+			<property name="SOURCE" value=""/>
+			<property expression="$ctx:messageerror" name="MESSAGE"/>
+			<property expression="$ctx:message4" name="PROCESS_STACK"/>
+			<property expression="$ctx:REQUEST" name="SERVICE_REQUEST_MESSAGE"/>
+			<property expression="$ctx:message" name="CODE"/>
+			<property name="CATEGORY" value="SYSTEM"/>
+			<property expression="get-property('ERROR_DETAIL')" name="message3"/>
+			<property expression="$ctx:message3" name="STACK_TRACE"/>
+			<property expression="$ctx:TRANSACTION_ID" name="ORDER_ID"/>
+			<property expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="ID" scope="default" type="STRING"/>
+			<clone continueParent="true">
+				<target sequence="MFS_LOG_EXCEPTION_SEQUENCE"/>
+			</clone>
+			<call-template target="MFSParserLogging">
+				<with-param name="Reg_value" value="LOG_ERROR_SEQUENCE_MFS_LOGGING"/>
+			</call-template>
+			<property name="Description" value="An exception occured in the service"/>
+			<property name="R_Code" value="-1"/>
+			<property name="R_Type" value="1"/>
+			<property name="R_TID" value="An Exception Occured"/>
+			<payloadFactory media-type="xml">
+				<format>
+					<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:req="http://cps.huawei.com/cpsinterface/request">
+						<soapenv:Body>
+							<Response>
+								<Result>
+									<ResultCode>$1</ResultCode>
+									<ResultType>$2</ResultType>
+									<TransactionID>$3</TransactionID>
+								</Result>
+							</Response>
+						</soapenv:Body>
+					</soapenv:Envelope>
+				</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:R_Code"/>
+					<arg evaluator="xml" expression="$ctx:R_Type"/>
+					<arg evaluator="xml" expression="$ctx:R_TID"/>
+				</args>
+			</payloadFactory>
+			<property expression="$ctx:ID" name="ID"/>
+			<property expression="$ctx:SYSTEM_NAME" name="SYSTEM_NAME"/>
+			<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME"/>
+			<property expression="$ctx:TIMEOUT" name="TIMEOUT"/>
+			<property expression="$ctx:message" name="STATUS"/>
+			<property name="STATUS_CODE" value="-1"/>
+			<property expression="fn:concat($ctx:TRANSACTION_ID,$ctx:TIMEIN)" name="ORDER_ID"/>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target property="RESPONSE" type="property"/>
+			</enrich>
+			<log level="custom">
+				<property expression="$ctx:RESPONSE" name="RESPONSE"/>
+			</log>
+			<property expression="$ctx:Identifier" name="MSISDNIdentifier"/>
+			<property expression="$ctx:HOST" name="HOST"/>
+			<property expression="$ctx:SOURCE" name="SOURCE"/>
+			<call-template target="MFSParserLogging">
+				<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+			</call-template>
+			<property name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+			<respond/>
+		</faultSequence>
+	</target>
+	<publishWSDL key="conf:/repository/esb/OMNO.wsdl"/>
+	<description/>
+</proxy>                                

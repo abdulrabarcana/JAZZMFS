@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy xmlns="http://ws.apache.org/ns/synapse" name="SendOutboundSMS" startOnLoad="true" statistics="disable" trace="disable" transports="http,https">
+	<target>
+		<inSequence>
+			<property description="TransactionID" expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="TransactionID" scope="default" type="STRING"/>
+			<log level="custom">
+				<property name="call" value="SendOutboundSMS"/>
+				<property expression="get-property('SYSTEM_DATE','yyyyMMddHHmmss')" name="OrderID"/>
+				<property expression="$ctx:LOG_REQUEST" name="Request"/>
+				<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd6" xmlns:soap="http://www.w3.org/2003/05/soap-envelope" expression="//sch:Request/sch:Message" name="Message"/>
+				<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd6" xmlns:soap="http://www.w3.org/2003/05/soap-envelope" expression="//sch:Request/sch:MSISDN" name="MSISDN"/>
+			</log>
+			<property expression="get-property('SYSTEM_DATE','yyyyMMddHHmmss')" name="OrderID"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd6" xmlns:soap="http://www.w3.org/2003/05/soap-envelope" expression="//sch:Request/sch:Message" name="Message"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd6" xmlns:soap="http://www.w3.org/2003/05/soap-envelope" expression="//sch:Request/sch:MSISDN" name="MSISDN"/>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target property="REQUEST" type="property"/>
+			</enrich>
+			<property expression="$ctx:TransactionID" name="ID"/>
+			<property name="SYSTEM_NAME" value="Mobicash"/>
+			<property name="INTERFACE_NAME" value="SendOutboundSMS"/>
+			<property expression="get-property('SYSTEM_DATE','yyyyMMddHHmmss')" name="Tracking_ID"/>
+			<property expression="get-property('SYSTEM_DATE','YYYY-MM-DD HH:MM:SS')" name="TIMEIN"/>
+			<property expression="$ctx:Tracking_ID" name="ORDER_ID"/>
+			<property expression="$ctx:Consumer_Number" name="MSISDN"/>
+			<property expression="$trp:Host" name="host"/>
+			<property expression="$ctx:Tracking_ID" name="MessageRecordid"/>
+			<property name="SOURCE" type="STRING" value="WSO2"/>
+			<clone continueParent="true">
+				<target sequence="MFS_LOG_REQUEST_SEQUENCE"/>
+			</clone>
+			<call-template target="MFSParserLogging">
+				<with-param name="Reg_value" value="LOG_REQUEST_SEQUENCE_MFS_LOGGING"/>
+			</call-template>
+			<class name="com.arcana.sendoutboundmessage.SendOutboundMessage"/>
+			<payloadFactory description="xmlresponse" media-type="xml">
+				<format>
+					<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd6">
+						<soapenv:Header/>
+						<soapenv:Body>
+							<sch:Request>
+								<sch:Status>$1</sch:Status>
+								<sch:Reason>$2</sch:Reason>
+							</sch:Request>
+						</soapenv:Body>
+					</soapenv:Envelope>
+				</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:status"/>
+					<arg evaluator="xml" expression="$ctx:reason"/>
+				</args>
+			</payloadFactory>
+			<property name="messageType" value="application/xml"/>
+			<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+			<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+			<property name="RESPONSE" scope="default" type="STRING" value="true"/>
+			<header action="remove" name="To" scope="default"/>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target property="RESPONSE" type="property"/>
+			</enrich>
+			<property name="SYSTEM_NAME" value="Mobicash"/>
+			<property name="INTERFACE_NAME" value="SendOutboundSMS"/>
+			<property expression="get-property('SYSTEM_DATE','yyyy-MM-dd HH-mm-ss')" name="TIMEOUT"/>
+			<property expression="$ctx:status" name="STATUS"/>
+			<property name="RESUBMISSION_COUNT" value=""/>
+			<filter xpath="$ctx:status ='OK'">
+				<then>
+					<property name="STATUS_CODE" value="00"/>
+				</then>
+				<else>
+					<property name="STATUS_CODE" value="01"/>
+				</else>
+			</filter>
+			<property name="IR_SENT" value=""/>
+			<clone continueParent="true">
+				<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+			</clone>
+			<call-template target="MFSParserLogging">
+				<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+			</call-template>
+			<property name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+			<respond/>
+		</inSequence>
+		<faultSequence>
+			<property expression="get-property('ERROR_MESSAGE')" name="messageerror"/>
+			<property expression="get-property('ERROR_CODE')" name="message"/>
+			<property expression="get-property('ERROR_DETAIL')" name="message3"/>
+			<property expression="get-property('ERROR_EXCEPTION')" name="message4"/>
+			<payloadFactory description="xmlresponse" media-type="xml">
+				<format>
+					<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd6">
+						<soapenv:Header/>
+						<soapenv:Body>
+							<sch:Request>
+								<sch:Status>KO</sch:Status>
+								<sch:Reason>An Exception Occured</sch:Reason>
+							</sch:Request>
+						</soapenv:Body>
+					</soapenv:Envelope>
+				</format>
+				<args/>
+			</payloadFactory>
+			<property name="messageType" value="application/xml"/>
+			<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+			<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+			<property name="RESPONSE" scope="default" type="STRING" value="true"/>
+			<header action="remove" name="To" scope="default"/>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target property="RESPONSE" type="property"/>
+			</enrich>
+			<property name="SYSTEM_NAME" value="Mobicash"/>
+			<property name="INTERFACE_NAME" value="SendOutboundSMS"/>
+			<property expression="get-property('SYSTEM_DATE','yyyy-MM-dd HH-mm-ss')" name="TIMEOUT"/>
+			<property name="STATUS" value="KO"/>
+			<property expression="$ctx:Consumer_Number" name="MSISDN"/>
+			<property name="RESUBMISSION_COUNT" value=""/>
+			<property name="STATUS_CODE" value="01"/>
+			<property name="IR_SENT" value=""/>
+			<clone continueParent="true">
+				<target sequence="MFS_LOG_EXCEPTION_SEQUENCE"/>
+			</clone>
+			<call-template target="MFSParserLogging">
+				<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+			</call-template>
+			<property name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+			<respond/>
+		</faultSequence>
+		<endpoint>
+			<wsdl port="SOAPEventSource" service="SendOutboundSMS" uri="http://localhost:10117/Services/Mobicash/Interface/SendOutboundSMS"/>
+		</endpoint>
+	</target>
+	<publishWSDL>
+		<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://xmlns.example.com/1456808354128/OperationImpl/Services/Mobicash/Interface" xmlns:ns0="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd6" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/" name="Untitled" targetNamespace="http://xmlns.example.com/1456808354128/OperationImpl/Services/Mobicash/Interface">
+			<wsdl:types>
+				<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd6" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/Mobicash/Schema.xsd6">
+					<xs:element name="MSISDN" type="xs:string"/>
+					<xs:element name="Message" type="xs:string"/>
+					<xs:element name="Reason" type="xs:string"/>
+					<xs:element name="Request">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element ref="ns0:Message"/>
+								<xs:element ref="ns0:MSISDN"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="Response">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element ref="ns0:Status"/>
+								<xs:element ref="ns0:Reason"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="Status" type="xs:string"/>
+				</xs:schema>
+			</wsdl:types>
+			<wsdl:service name="SendOutboundSMS">
+				<wsdl:port binding="tns:SOAPEventSourceBinding" name="SOAPEventSource">
+					<soap:address location="http://localhost:10117/Services/Mobicash/Interface/SendOutboundSMS"/>
+				</wsdl:port>
+			</wsdl:service>
+			<wsdl:portType name="Port">
+				<wsdl:operation name="Operation">
+					<wsdl:input message="tns:MessageIN"/>
+					<wsdl:output message="tns:MessageOUT"/>
+				</wsdl:operation>
+			</wsdl:portType>
+			<wsdl:binding name="SOAPEventSourceBinding" type="tns:Port">
+				<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+				<wsdl:operation name="Operation">
+					<soap:operation soapAction="/Services/Mobicash/Interface/SendOutboundSMS" soapActionRequired="true" style="document"/>
+					<wsdl:input>
+						<soap:body parts="MessageIn" use="literal"/>
+					</wsdl:input>
+					<wsdl:output>
+						<soap:body parts="MessageOut" use="literal"/>
+					</wsdl:output>
+				</wsdl:operation>
+			</wsdl:binding>
+			<wsdl:message name="MessageIN">
+				<wsdl:part element="ns0:Request" name="MessageIn"/>
+			</wsdl:message>
+			<wsdl:message name="MessageOUT">
+				<wsdl:part element="ns0:Response" name="MessageOut"/>
+			</wsdl:message>
+		</wsdl:definitions>
+	</publishWSDL>
+	<description/>
+</proxy>                                

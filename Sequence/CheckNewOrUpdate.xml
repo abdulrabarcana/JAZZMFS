@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="CheckNewOrUpdate">
+   <log level="full">
+      <property name="property_nameFirst" value="INSIDE Check New Or Update"/>
+   </log>
+   <filter xmlns:ns="http://org.apache.synapse/xsd"
+           source="$ctx:KYC_Language"
+           regex="1">
+      <then>
+         <filter xpath="fn:string-length(get-property('KYC_DOB'))=4">
+            <then>
+               <property name="KYC_DOB" expression="fn:concat($ctx:KYC_DOB,'0101')"/>
+            </then>
+         </filter>
+         <filter xpath="$ctx:KYC_MotherMaidenName =''">
+            <then>
+               <property name="KYC_MotherMaidenName" value="No Data exists at NADRA"/>
+            </then>
+         </filter>
+         <filter xpath="fn:upper-case(get-property('KYC_CNICExpiryDate'))=fn:upper-case('Tahayat')">
+            <then>
+               <property name="KYC_CNICExpiryDate" value="20500101"/>
+            </then>
+         </filter>
+      </then>
+      <else>
+         <filter xpath="fn:string-length(get-property('STC_Nadra_DOB'))=4">
+            <then>
+               <property name="STC_Nadra_DOB" expression="fn:concat($ctx:STC_Nadra_DOB,'0101')"/>
+            </then>
+         </filter>
+         <filter xpath="$ctx:STC_Nadra_MotherName =''">
+            <then>
+               <property name="STC_Nadra_MotherName" value="No Data exists at NADRA"/>
+            </then>
+         </filter>
+         <filter xpath="fn:upper-case(get-property('STC_Nadra_CNICExp'))=fn:upper-case('Tahayat')">
+            <then>
+               <property name="STC_Nadra_CNICExp" value="20500101"/>
+            </then>
+         </filter>
+         <filter source="$ctx:STC_Nadra_Gender" regex="MALE">
+            <then>
+               <property name="STC_Nadra_Gender" value="1"/>
+            </then>
+            <else>
+               <property name="STC_Nadra_Gender" value="0"/>
+            </else>
+         </filter>
+         <property name="ReservedField1" expression="$ctx:STC_Nadra_FatherName"/>
+         <property name="ReservedField2" expression="$ctx:STC_Nadra_PlaceOfBirth"/>
+      </else>
+   </filter>
+   <property name="CallerType" value="2"/>
+   <property name="ThirdPartyID" value="NFC"/>
+   <property name="Password" value="lCd3/sKRO+2taoi0+jeDPQ=="/>
+   <property name="ResultUrl" value="http://10.50.13.117:8285/resulturi/post"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="identifierType"
+             expression="$ctx:ReservedField3"/>
+   <filter xmlns:ns="http://org.apache.synapse/xsd"
+           source="$ctx:ReservedField3"
+           regex="11">
+      <then>
+         <property name="identifier" expression="$ctx:ReservedField4"/>
+      </then>
+      <else>
+         <property name="identifier" expression="$ctx:Msisdn_against_CNIC"/>
+      </else>
+   </filter>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="SecurityCredential"
+             expression="$ctx:OP_MPIN"/>
+   <property name="commandId" value="CheckMSISDNAndCNIC"/>
+   <property name="conversationId" value=""/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="originatorconversationId"
+             expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),synapse:get-property('SYSTEM_DATE', 'HHmmss'))"/>
+   <property name="key1" value="ChannelCode"/>
+   <property name="value1" value="1015"/>
+   <property name="key2" value="TargetMSISDN"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="value2"
+             expression="$ctx:C_MSISDN"/>
+   <property name="key3" value="TargetCNIC"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="value3"
+             expression="$ctx:C_CNIC"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="Timestamp"
+             expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),synapse:get-property('SYSTEM_DATE', 'HHmmss'))"/>
+   <payloadFactory media-type="xml">
+      <format key="conf:repository/esb/Huawei1"/>
+      <args>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:CallerType"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:ThirdPartyID"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:Password"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:ResultUrl"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:identifierType"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:identifier"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:SecurityCredential"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:commandId"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:conversationId"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:originatorconversationId"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:value1"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:value2"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:value3"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:Timestamp"/>
+      </args>
+   </payloadFactory>
+   <enrich>
+      <source type="body" clone="true"/>
+      <target type="property" property="LOG_REQUEST"/>
+   </enrich>
+   <log level="custom">
+      <property xmlns:ns="http://org.apache.synapse/xsd"
+                name="Request"
+                expression="$ctx:LOG_REQUEST"/>
+   </log>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="ID"
+             expression="$ctx:uuidId"/>
+   <property name="SYSTEM_NAME" value="Biometric"/>
+   <property name="INTERFACE_NAME" value="CheckPreRegistration-Main"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="TIMEIN"
+             expression="$ctx:Timestamp"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="REQUEST"
+             expression="$ctx:LOG_REQUEST"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="ORDER_ID"
+             expression="$ctx:TransactionId"/>
+   <property name="TARGET_SYSTEM_NAME" value=""/>
+   <property name="TARGET_INTERFACE_NAME" value=""/>
+   <property name="MSISDN" value=""/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="HOST"
+             expression="$trp:host"/>
+   <property name="SOURCE" value="RHARegistration/CheckPreRegistration-Main"/>
+   <call-template target="MFSParserLogging">
+      <with-param name="Reg_value" value="LOG_REQUEST_SEQUENCE_MFS_LOGGING"/>
+   </call-template>
+   <header name="Action" value="GenericAPIRequest"/>
+   <property name="messageType" value="text/xml"/>
+   <call>
+      <endpoint>
+         <address uri="http://10.227.22.148:8081/payment/services/RequestMgrService"
+                  format="soap11">
+            <timeout>
+               <duration>4000</duration>
+               <responseAction>fault</responseAction>
+            </timeout>
+            <suspendOnFailure>
+               <errorCodes>-1</errorCodes>
+               <progressionFactor>1.0</progressionFactor>
+            </suspendOnFailure>
+            <markForSuspension>
+               <errorCodes>-1</errorCodes>
+            </markForSuspension>
+         </address>
+      </endpoint>
+   </call>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             xmlns:req="http://cps.huawei.com/cpsinterface/request"
+             name="CDATAPAYLOAD"
+             expression="//req:ResponseMsg"
+             type="OM"/>
+   <log level="full">
+      <property name="____" value="*************************"/>
+   </log>
+   <enrich>
+      <source type="property" clone="true" property="CDATAPAYLOAD"/>
+      <target xmlns:ns="http://org.apache.synapse/xsd"
+              xmlns:req="http://cps.huawei.com/cpsinterface/request"
+              xpath="//req:ResponseMsg/text()"/>
+   </enrich>
+   <property name="TIMEOUT" value=""/>
+   <property name="STATUS" value=""/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="RESPONSE"
+             expression="$ctx:LOG_RESPONSE"/>
+   <property name="RESUBMISSION_COUNT" value=""/>
+   <property name="STATUS_CODE" value=""/>
+   <property name="IR_SENT" value=""/>
+   <call-template target="MFSParserLogging">
+      <with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+   </call-template>
+   <log level="full">
+      <property xmlns:ns="http://org.apache.synapse/xsd"
+                xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                name="Responsecheck"
+                expression="//req:ResponseMsg/Response/ResponseCode"/>
+      <property xmlns:ns="http://org.apache.synapse/xsd"
+                xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                name="ResponseConversationID"
+                expression="//req:ResponseMsg/Response/ConversationID"/>
+      <property xmlns:ns="http://org.apache.synapse/xsd"
+                xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                name="ResponseDesc"
+                expression="//req:ResponseMsg/Response/ResponseDesc"/>
+      <property xmlns:ns="http://org.apache.synapse/xsd"
+                xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                name="ResponseServiceStatus"
+                expression="//req:ResponseMsg/Response/ServiceStatus"/>
+   </log>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             xmlns:req="http://cps.huawei.com/cpsinterface/request"
+             name="Responsecheck"
+             expression="//req:ResponseMsg/Response/ResponseCode"
+             scope="default"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             xmlns:req="http://cps.huawei.com/cpsinterface/request"
+             name="ResponseConversationID"
+             expression="//req:ResponseMsg/Response/ConversationID"
+             scope="default"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             xmlns:req="http://cps.huawei.com/cpsinterface/request"
+             name="ResponseDesc"
+             expression="//req:ResponseMsg/Response/ResponseDesc"
+             scope="default"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             xmlns:req="http://cps.huawei.com/cpsinterface/request"
+             name="ResponseServiceStatus"
+             expression="//req:ResponseMsg/Response/ServiceStatus"
+             scope="default"/>
+   <filter xmlns:ns="http://org.apache.synapse/xsd"
+           source="$ctx:Responsecheck"
+           regex="0">
+      <then>
+         <property name="TRANSACTION_ID"
+                   expression="$ctx:originatorconversationId"
+                   scope="default"/>
+         <property name="CONVERSATION_ID"
+                   expression="$ctx:ResponseConversationID"
+                   scope="default"/>
+         <class name="com.arcanainfo.mediators.mfs.ussdservices.DbPoller"/>
+         <log level="custom">
+            <property name="asyncResponse" expression="$ctx:result"/>
+         </log>
+         <property name="asyncResponse"
+                   expression="$ctx:result"
+                   scope="default"
+                   type="OM"/>
+         <payloadFactory media-type="xml">
+            <format>
+               <Response xmlns="">$1</Response>
+            </format>
+            <args>
+               <arg evaluator="xml" expression="$ctx:asyncResponse"/>
+            </args>
+         </payloadFactory>
+         <log level="custom">
+            <property name="asyncResultCode" expression="//Response/Result/ResultCode"/>
+            <property name="asyncResultDesc" expression="//Response/Result/ResultDesc"/>
+            <property name="asyncIdentityStatusValue"
+                      expression="//Response/Result/ResultParameters/ResultParamete[@key='IdentityStatus']/@value"/>
+         </log>
+         <property name="asyncResultCode" expression="//Response/Result/ResultCode"/>
+         <property name="asyncResultDesc" expression="//Response/Result/ResultDesc"/>
+         <property name="asyncIdentityStatusValue"
+                   expression="//Response/Result/ResultParameters/ResultParamete[@key='IdentityStatus']/@value"/>
+         <filter xpath="$ctx:asyncResultCode='0' and $ctx:asyncIdentityStatusValue='03'">
+            <then>
+               <property name="Status" value="KO"/>
+               <property name="Reason" expression="$ctx:asyncIdentityStatusValue"/>
+            </then>
+         </filter>
+         <filter source="$ctx:asyncResultCode" regex="0">
+            <then>
+               <property name="Status" value="OK"/>
+               <property name="Reason" expression="$ctx:asyncIdentityStatusValue"/>
+            </then>
+            <else>
+               <property name="Status" value="KO"/>
+               <property name="Reason" expression="$ctx:ResultDesc"/>
+            </else>
+         </filter>
+      </then>
+      <else>
+         <log level="custom">
+            <property name="Failed" value="Response"/>
+         </log>
+         <property name="Status" value="KO"/>
+         <property name="Reason" expression="$ctx:ResponseDesc"/>
+      </else>
+   </filter>
+</sequence>

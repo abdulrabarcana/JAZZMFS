@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="NewRegistration">
+   <log level="full">
+      <property name="property_nameFirst" value="INSIDE New Registration"/>
+   </log>
+   <payloadFactory media-type="xml">
+      <format>
+         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                           xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/MFS/MSISDNStatus/Schema.xsd">
+            <soapenv:Header/>
+            <soapenv:Body>
+               <sch:MSISDNStatusIn>
+                  <sch:Username>mfs</sch:Username>
+                  <sch:Password>W8zlNeTjU22NJosxct9MYQ==</sch:Password>
+                  <sch:TransactionID>$1</sch:TransactionID>
+                  <sch:MSISDN>$2</sch:MSISDN>
+                  <sch:CNIC/>
+               </sch:MSISDNStatusIn>
+            </soapenv:Body>
+         </soapenv:Envelope>
+      </format>
+      <args>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:TransactionId"/>
+         <arg xmlns:ns="http://org.apache.synapse/xsd"
+              evaluator="xml"
+              expression="$ctx:C_MSISDN"/>
+      </args>
+   </payloadFactory>
+   <header name="SOAPAction"
+           scope="transport"
+           value="/Services/MFS/MSISDNStatus/Interface/MSISDNStatus-SOAP"/>
+   <property name="Content-Encoding" scope="transport" action="remove"/>
+   <call>
+      <endpoint>
+         <address uri="https://10.50.171.8:443/MFSMSISDNStatusLive/Services/MFS/GetMFSMSISDNStatus/Interfaces/GetMFSMSISDNStatus-SOAP"
+                  format="soap11">
+            <timeout>
+               <duration>4000</duration>
+               <responseAction>fault</responseAction>
+            </timeout>
+            <suspendOnFailure>
+               <errorCodes>-1</errorCodes>
+               <progressionFactor>1.0</progressionFactor>
+            </suspendOnFailure>
+            <markForSuspension>
+               <errorCodes>-1</errorCodes>
+            </markForSuspension>
+         </address>
+      </endpoint>
+   </call>
+   <property name="messageType" value="text/xml" scope="axis2" type="STRING"/>
+   <enrich>
+      <source type="envelope" clone="true"/>
+      <target type="property" property="LOG_RESPONSE"/>
+   </enrich>
+   <log level="custom">
+      <property xmlns:ns0="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/MFS/MSISDNStatus/Schema.xsd"
+                xmlns:ns="http://org.apache.synapse/xsd"
+                xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                name="Status"
+                expression="$body//ns0:MSISDNStatusOut/ns0:Status"/>
+      <property xmlns:ns0="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/MFS/MSISDNStatus/Schema.xsd"
+                xmlns:ns="http://org.apache.synapse/xsd"
+                xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                name="TransactionID"
+                expression="$body//ns0:MSISDNStatusOut/ns0:TransactionID"/>
+      <property xmlns:ns0="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/MFS/MSISDNStatus/Schema.xsd"
+                xmlns:ns="http://org.apache.synapse/xsd"
+                xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                name="Reason"
+                expression="$body//ns0:MSISDNStatusOut/ns0:Reason"/>
+      <property xmlns:ns0="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/MFS/MSISDNStatus/Schema.xsd"
+                xmlns:ns="http://org.apache.synapse/xsd"
+                xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                name="MSISDN"
+                expression="$body//ns0:MSISDNStatusOut/ns0:MSISDN"/>
+   </log>
+   <property xmlns:ns0="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/MFS/MSISDNStatus/Schema.xsd"
+             xmlns:ns="http://org.apache.synapse/xsd"
+             xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+             name="Status"
+             expression="$body//ns0:MSISDNStatusOut/ns0:Status"/>
+   <property xmlns:ns0="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/MFS/MSISDNStatus/Schema.xsd"
+             xmlns:ns="http://org.apache.synapse/xsd"
+             xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+             name="TransactionID"
+             expression="$body//ns0:MSISDNStatusOut/ns0:TransactionID"/>
+   <property xmlns:ns0="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/MFS/MSISDNStatus/Schema.xsd"
+             xmlns:ns="http://org.apache.synapse/xsd"
+             xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+             name="Reason"
+             expression="$body//ns0:MSISDNStatusOut/ns0:Reason"/>
+   <property xmlns:ns0="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/MFS/MSISDNStatus/Schema.xsd"
+             xmlns:ns="http://org.apache.synapse/xsd"
+             xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+             name="MSISDN"
+             expression="$body//ns0:MSISDNStatusOut/ns0:MSISDN"/>
+   <filter xmlns:ns="http://org.apache.synapse/xsd"
+           xpath="($ctx:Status='OK') or ($ctx:Status='KO' and $ctx:Reason='MSISDN Inactive/Suspended in CRM')">
+      <then>
+         <switch source="$ctx:Status">
+            <case regex="OK">
+               <property name="CustomerType" value="1002"/>
+               <log level="custom">
+                  <property name="CustomerType" value="1002"/>
+               </log>
+            </case>
+            <case regex="KO">
+               <property name="CustomerType" value="1200"/>
+               <log level="custom">
+                  <property name="CustomerType" value="1200"/>
+               </log>
+            </case>
+            <default>
+               <property name="CustomerType" value=" "/>
+            </default>
+         </switch>
+         <property name="KYC_CNIC" expression="$ctx:STC_Nadra_CNICExp"/>
+         <property name="KYC_Name" expression="$ctx:STC_Nadra_Name"/>
+         <property name="KYC_DOB" expression="$ctx:STC_Nadra_DOB"/>
+         <property name="KYC_MotherMaidenName" expression="$ctx:STC_Nadra_MotherName"/>
+         <property name="KYC_PermanentAddress" expression="$ctx:STC_Nadra_Address"/>
+         <property name="KYC_CNICExpiryDate" expression="$ctx:STC_Nadra_CNICExp"/>
+         <property name="KYC_Gender" expression="$ctx:STC_Nadra_Gender"/>
+         <property name="ReservedField1" expression="$ctx:STC_Nadra_FatherName"/>
+         <property name="ReservedField2" expression="$ctx:STC_Nadra_PlaceOfBirth"/>
+         <property name="CallerType" value="2"/>
+         <property name="ThirdPartyID" value="POS_Broker"/>
+         <property name="Password" value="R8HNnLOiLzI="/>
+         <property name="ResultUrl"
+                   value="http://10.227.23.230:9685/Services/RHABiometricRegistration/Common/ResponseReceiver"/>
+         <property name="identifierType" expression="$ctx:ReservedField3"/>
+         <filter source="$ctx:ReservedField3" regex="11">
+            <then>
+               <property name="identifier" expression="$ctx:ReservedField4"/>
+            </then>
+            <else>
+               <property name="identifier" expression="$ctx:Msisdn_against_CNIC"/>
+            </else>
+         </filter>
+         <property name="SecurityCredential" expression="$ctx:OP_MPIN"/>
+         <property name="commandId" value="CreateCustomerViaBIO"/>
+         <property name="conversationId" value=""/>
+         <property name="originatorconversationId"
+                   expression="fn:concat('BVInfo',get-property('SYSTEM_DATE','yyyyMMddHHmmss'))"/>
+         <property name="key1" value="ChannelCode"/>
+         <property name="value1" value="1015"/>
+         <property name="key2" value="[KYC][Personal Info][CNIC]"/>
+         <property name="value2" expression="$ctx:C_CNIC"/>
+         <property name="key3" value="CustomerMSISDN"/>
+         <property name="value3" expression="$ctx:C_MSISDN"/>
+         <property name="key4" value="[KYC][Personal Info][Mother's Maiden Name]"/>
+         <property name="value4" expression="$ctx:KYC_MotherMaidenName"/>
+         <property name="key5" value="[KYC][Personal Info][Permanent Address]"/>
+         <property name="value5" expression="$ctx:KYC_PermanentAddress"/>
+         <property name="key6" value="KYC][Personal Info][Identity Owner Name]"/>
+         <property name="value6" expression="$ctx:KYC_Name"/>
+         <filter source="$ctx:KYC_CNICExpiryDate"
+                 regex="^\d{4}(0?[1-9]|1[012])(0?[1-9]|[12][0-9]|3[01])$">
+            <then>
+               <property name="KYC_CNICExpiryDate" expression="$ctx:KYC_CNICExpiryDate"/>
+            </then>
+            <else>
+               <script language="js">var temp=mc.getProperty("KYC_CNICExpiryDate"); var dat= temp.substr(0, 2) + "-"; var mon=temp.substr(2,2) + "-"; var year=temp.substr(4,4); var date = String(dat+mon+year); var newdate = date.split("-").reverse().join("-"); var originaldate = newdate.replace(/-/g,''); print("Date:  " + date); print("New Date:  " + newdate); print("Orginal Date:  " + originaldate); mc.setProperty("KYC_CNICExpiryDate",originaldate);</script>
+            </else>
+         </filter>
+         <filter source="$ctx:KYC_DOB"
+                 regex="^\d{4}(0?[1-9]|1[012])(0?[1-9]|[12][0-9]|3[01])$">
+            <then>
+               <property name="KYC_DOB" expression="$ctx:KYC_DOB"/>
+            </then>
+            <else>
+               <script language="js">var temp=mc.getProperty("KYC_DOB"); var dat= temp.substr(0, 2) + "-"; var mon=temp.substr(2,2) + "-"; var year=temp.substr(4,4); var date = String(dat+mon+year); var newdate = date.split("-").reverse().join("-"); var originaldate = newdate.replace(/-/g,''); print("Date:  " + date); print("New Date:  " + newdate); print("Orginal Date:  " + originaldate); mc.setProperty("KYC_DOB",originaldate);</script>
+            </else>
+         </filter>
+         <property name="key7" value="[KYC][Personal Info][CNIC Expiry]"/>
+         <property name="value7" expression="$ctx:KYC_CNICExpiryDate"/>
+         <property name="key8" value="[KYC][Personal Info][Date of Birth]"/>
+         <property name="value8" expression="$ctx:KYC_DOB"/>
+         <filter source="$ctx:KYC_Gender" regex="1">
+            <then>
+               <property name="value9" value="M"/>
+            </then>
+            <else>
+               <property name="value9" value="F"/>
+            </else>
+         </filter>
+         <property name="key9" value="[KYC][Personal Info][Gender]"/>
+         <property name="value9" expression="$ctx:value9"/>
+         <property name="key10" value="[KYC][Personal Info][Father Name]"/>
+         <property name="value10" expression="$ctx:ReservedField1"/>
+         <property name="key11" value="[KYC][Personal Info][Place of Birth]"/>
+         <property name="value11" expression="$ctx:ReservedField2"/>
+         <filter source="$ctx:CustomerType" regex="1002">
+            <then>
+               <property name="value12" value="2"/>
+            </then>
+            <else>
+               <property name="value12" value="5"/>
+            </else>
+         </filter>
+         <property name="key12" value="TrustLevel"/>
+         <property name="value12" expression="$ctx:value12"/>
+         <property name="key13" value="CustomerType"/>
+         <property name="value13" expression="$ctx:CustomerType"/>
+         <property name="Timestamp"
+                   expression="get-property('SYSTEM_DATE','yyyyMMddHHmmss')"/>
+         <property name="Keyowner" value="1"/>
+         <payloadFactory media-type="xml">
+            <format key="conf:/repository/esb/Huawei2"/>
+            <args>
+               <arg evaluator="xml" expression="$ctx:identifierType"/>
+               <arg evaluator="xml" expression="$ctx:identifier"/>
+               <arg evaluator="xml" expression="$ctx:SecurityCredential"/>
+               <arg evaluator="xml" expression="$ctx:originatorconversationId"/>
+               <arg evaluator="xml" expression="$ctx:value2"/>
+               <arg evaluator="xml" expression="$ctx:value3"/>
+               <arg evaluator="xml" expression="$ctx:value4"/>
+               <arg evaluator="xml" expression="$ctx:value5"/>
+               <arg evaluator="xml" expression="$ctx:value10"/>
+               <arg evaluator="xml" expression="$ctx:value11"/>
+               <arg evaluator="xml" expression="$ctx:value6"/>
+               <arg evaluator="xml" expression="$ctx:value7"/>
+               <arg evaluator="xml" expression="$ctx:value8"/>
+               <arg evaluator="xml" expression="$ctx:CustomerType"/>
+               <arg evaluator="xml" expression="$ctx:value9"/>
+               <arg evaluator="xml" expression="$ctx:Timestamp"/>
+            </args>
+         </payloadFactory>
+         <enrich>
+            <source type="body" clone="true"/>
+            <target type="property" property="LOG_REQUEST"/>
+         </enrich>
+         <property name="ID" expression="$ctx:uuidId"/>
+         <property name="SYSTEM_NAME" value="Biometric"/>
+         <property name="INTERFACE_NAME" value="BiometricNewMARegistration-Main"/>
+         <property name="TIMEIN" expression="$ctx:Timestamp"/>
+         <property name="REQUEST" expression="$ctx:LOG_REQUEST"/>
+         <property name="ORDER_ID" expression="$ctx:TransactionId"/>
+         <property name="TARGET_SYSTEM_NAME" value=""/>
+         <property name="TARGET_INTERFACE_NAME" value=""/>
+         <property name="MSISDN" value=""/>
+         <property name="HOST" expression="$trp:host"/>
+         <property name="SOURCE" value=""/>
+         <call-template target="MFSParserLogging">
+            <with-param name="Reg_value" value="LOG_REQUEST_SEQUENCE_MFS_LOGGING"/>
+         </call-template>
+         <log level="custom">
+            <property name="Request" expression="$ctx:LOG_REQUEST"/>
+         </log>
+         <property name="messageType" value="text/xml"/>
+         <header name="Action" value="GenericAPIRequest"/>
+         <log level="custom">
+            <property name="We are hereeeee"
+                      value="*****************************************************************************"/>
+         </log>
+         <log level="full"/>
+         <call>
+            <endpoint>
+               <address uri="http://10.227.22.148:8081/payment/services/RequestMgrService"
+                        format="soap11">
+                  <timeout>
+                     <duration>4000</duration>
+                     <responseAction>fault</responseAction>
+                  </timeout>
+                  <suspendOnFailure>
+                     <errorCodes>-1</errorCodes>
+                     <progressionFactor>1.0</progressionFactor>
+                  </suspendOnFailure>
+                  <markForSuspension>
+                     <errorCodes>-1</errorCodes>
+                  </markForSuspension>
+               </address>
+            </endpoint>
+         </call>
+         <property name="After End Piont"
+                   value="*****************************************************************************"/>
+         <log level="full"/>
+         <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                   name="CDATAPAYLOAD"
+                   expression="//req:ResponseMsg"
+                   type="OM"/>
+         <enrich>
+            <source type="property" clone="true" property="CDATAPAYLOAD"/>
+            <target xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                    xpath="//req:ResponseMsg/text()"/>
+         </enrich>
+         <enrich>
+            <source type="envelope" clone="true"/>
+            <target type="property" property="LOG_RESPONSE"/>
+         </enrich>
+         <property name="TIMEOUT" value=""/>
+         <property name="STATUS" value=""/>
+         <property name="RESPONSE" expression="$ctx:LOG_RESPONSE"/>
+         <property name="RESUBMISSION_COUNT" value=""/>
+         <property name="STATUS_CODE" value=""/>
+         <property name="IR_SENT" value=""/>
+         <call-template target="MFSParserLogging">
+            <with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+         </call-template>
+         <log level="custom">
+            <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                      name="Responsecheck"
+                      expression="//req:ResponseMsg/Response/ResponseCode"/>
+            <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                      name="ResponseConversationID"
+                      expression="//req:ResponseMsg/Response/ConversationID"/>
+            <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                      name="ResponseDesc"
+                      expression="//req:ResponseMsg/Response/ResponseDesc"/>
+            <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                      name="ResponseOriginalConversationId"
+                      expression="//req:ResponseMsg/Response/OriginatorConversationID"/>
+            <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                      name="ResponseServiceStatus"
+                      expression="//req:ResponseMsg/Response/ServiceStatus"/>
+         </log>
+         <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                   name="Responsecheck"
+                   expression="//req:ResponseMsg/Response/ResponseCode"
+                   scope="default"/>
+         <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                   name="ResponseConversationID"
+                   expression="//req:ResponseMsg/Response/ConversationID"
+                   scope="default"/>
+         <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                   name="ResponseDesc"
+                   expression="//req:ResponseMsg/Response/ResponseDesc"
+                   scope="default"/>
+         <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                   name="ResponseOriginalConversationId"
+                   expression="//req:ResponseMsg/Response/OriginatorConversationID"
+                   scope="default"/>
+         <property xmlns:req="http://cps.huawei.com/cpsinterface/request"
+                   name="ResponseServiceStatus"
+                   expression="//req:ResponseMsg/Response/ServiceStatus"
+                   scope="default"/>
+         <filter source="$ctx:Responsecheck" regex="0">
+            <then>
+               <property name="TRANSACTION_ID" expression="$ctx:ResponseOriginalConversationId"/>
+               <property name="CONVERSATION_ID" expression="$ctx:ResponseConversationID"/>
+               <class name="com.arcanainfo.mediators.mfs.ussdservices.DbPoller"/>
+               <log level="custom">
+                  <property name="asyncResponse" expression="$ctx:result"/>
+               </log>
+               <property name="asyncResponse" expression="$ctx:result" scope="default"/>
+               <payloadFactory media-type="xml">
+                  <format>
+                     <Response xmlns="">$1</Response>
+                  </format>
+                  <args>
+                     <arg evaluator="xml" expression="$ctx:asyncResponse"/>
+                  </args>
+               </payloadFactory>
+               <log level="custom">
+                  <property name="asyncResultCode" expression="//Response/Result/ResultCode"/>
+                  <property name="asyncResultDesc" expression="//Response/Result/ResultDesc"/>
+                  <property name="asyncIdentityStatusValue"
+                            expression="$body//Response/Result/ResultParameters/ResultParameter[Key='IdentityStatus']/Value"/>
+                  <property name="asyncIdentityStatusValueFailure"
+                            expression="$body//Response/Result/ResultParameters/ResultParameter[Key='FailedReason']/Value"/>
+               </log>
+               <property name="asyncResultCode" expression="//Response/Result/ResultCode"/>
+               <property name="asyncResultDesc" expression="//Response/Result/ResultDesc"/>
+               <property name="asyncIdentityStatusValue"
+                         expression="$body//Response/Result/ResultParameters/ResultParameter[Key='IdentityStatus']/Value"/>
+               <property name="asyncIdentityStatusValueFailure"
+                         expression="$body//Response/Result/ResultParameters/ResultParameter[Key='FailedReason']/Value"/>
+               <filter source="$ctx:asyncResultCode" regex="0">
+                  <then>
+                     <property name="Status" value="OK"/>
+                     <property name="Reason" expression="$ctx:asyncResultDesc"/>
+                  </then>
+                  <else>
+                     <property name="Status" value="KO"/>
+                     <property name="Reason"
+                               expression="fn:concat('Error at Huawei |',$ctx:asyncResultDesc,'|',$ctx:asyncIdentityStatusValueFailure)"/>
+                  </else>
+               </filter>
+            </then>
+            <else>
+               <property name="Status" value="KO"/>
+               <property name="Reason"
+                         expression="fn:concat('Error at Huawei |',$ctx:ResponseDesc)"/>
+            </else>
+         </filter>
+      </then>
+      <else>
+         <property name="Status" value="KO"/>
+         <property name="Reason"
+                   expression="fn:concat('Error at MFS-MSISDNStatus |',$ctx:Reason)"/>
+      </else>
+   </filter>
+</sequence>

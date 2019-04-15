@@ -1,0 +1,788 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy xmlns="http://ws.apache.org/ns/synapse" name="BiometricMA" startOnLoad="true" statistics="disable" trace="disable" transports="http,https">
+	<target>
+		<inSequence>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target property="LOG_REQUEST" type="property"/>
+			</enrich>
+			<property description="TransactionID" expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="uuidId" scope="default" type="STRING"/>
+			<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="Timestamp"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn/sch:TransactionId" name="TransactionId"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:CustomerInformation/sch:MSISDN" name="C_MSISDN"/>
+			<property expression="$ctx:uuidId" name="ID"/>
+			<property name="SYSTEM_NAME" value="Biometric"/>
+			<property name="INTERFACE_NAME" value="MARegistration"/>
+			<property expression="$ctx:Timestamp" name="TIMEIN"/>
+			<property expression="$ctx:LOG_REQUEST" name="REQUEST"/>
+			<property expression="$ctx:TransactionId" name="ORDER_ID"/>
+			<property name="TARGET_SYSTEM_NAME" value=""/>
+			<property name="TARGET_INTERFACE_NAME" value=""/>
+			<property expression="$ctx:C_MSISDN" name="MSISDN"/>
+			<property expression="$trp:host" name="HOST"/>
+			<property name="SOURCE" value=""/>
+			<call-template target="MFSParserLogging">
+				<with-param name="Reg_value" value="LOG_REQUEST_SEQUENCE_MFS_LOGGING"/>
+			</call-template>
+			<clone continueParent="true">
+				<target sequence="MFS_LOG_REQUEST_SEQUENCE"/>
+			</clone>
+			<log level="custom">
+				<property name="BioMetric" value="Started"/>
+			</log>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:OperatorInformation/sch:IMEI" name="OP_IMEI"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:OperatorInformation/sch:CNIC" name="Op_CNIC"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:OperatorInformation/sch:MPIN" name="OP_MPIN"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:CustomerInformation/sch:CNIC" name="C_CNIC"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:KYCData/sch:Language" name="KYC_Language"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:KYCData/sch:CNIC" name="KYC_CNIC"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:KYCData/sch:Name" name="KYC_Name"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:KYCData/sch:DOB" name="KYC_DOB"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:KYCData/sch:MotherMaidenName" name="KYC_MotherMaidenName"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:KYCData/sch:PermanentAddress" name="KYC_PermanentAddress"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:KYCData/sch:CNICExpiryDate" name="KYC_CNICExpiryDate"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn//sch:KYCData/sch:Gender" name="KYC_Gender"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn/sch:ReservedField1" name="ReservedField1"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn/sch:ReservedField2" name="ReservedField2"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn/sch:ReservedField3" name="ReservedField3"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn/sch:ReservedField4" name="ReservedField4"/>
+			<property xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" expression="$body//sch:MARegistrationIn/sch:ReservedField5" name="ReservedField5"/>
+			<log level="custom">
+				<property name="###############" value="############################"/>
+				<property expression="$ctx:OP_IMEI" name="OP_IMEI"/>
+				<property expression="$ctx:Op_CNIC" name="Op_CNIC"/>
+				<property expression="$ctx:OP_MPIN" name="OP_MPIN"/>
+				<property expression="$ctx:C_MSISDN" name="C_MSISDN"/>
+				<property expression="$ctx:C_CNIC" name="C_CNIC"/>
+				<property expression="$ctx:KYC_Language" name="KYC_Language"/>
+				<property expression="$ctx:KYC_CNIC" name="KYC_CNIC"/>
+				<property expression="$ctx:KYC_Name" name="KYC_Name"/>
+				<property expression="$ctx:KYC_DOB" name="KYC_DOB"/>
+				<property expression="$ctx:KYC_MotherMaidenName" name="KYC_MotherMaidenName"/>
+				<property expression="$ctx:KYC_PermanentAddress" name="KYC_PermanentAddress"/>
+				<property expression="$ctx:KYC_CNICExpiryDate" name="KYC_CNICExpiryDate"/>
+				<property expression="$ctx:KYC_Gender" name="KYC_Gender"/>
+				<property expression="$ctx:ReservedField1" name="ReservedField1"/>
+				<property expression="$ctx:ReservedField2" name="ReservedField2"/>
+				<property expression="$ctx:ReservedField3" name="ReservedField3"/>
+				<property expression="$ctx:ReservedField4" name="ReservedField4"/>
+				<property expression="$ctx:ReservedField5" name="ReservedField5"/>
+				<property expression="$ctx:TransactionId" name="TransactionId"/>
+			</log>
+			<property expression="fn:concat(substring($ctx:ReservedField1,0,3),'-',substring($ctx:ReservedField1,3,2),'-',substring($ctx:ReservedField1,5,4))" name="ReservedField1"/>
+			<filter regex="1" source="$ctx:KYC_Language">
+				<then>
+					<log level="custom">
+						<property name="Language" value="English"/>
+					</log>
+					<sequence key="GetMSISDNAgainstCNIC"/>
+					<log level="custom">
+						<property name="After" value="GetMSISDNAgainstCNIC"/>
+						<property expression="$ctx:Status" name="GetMSISDNAgainstCNIC_Status"/>
+					</log>
+					<property expression="$ctx:MSISDN" name="Msisdn_against_CNIC"/>
+					<filter regex="OK" source="$ctx:Status">
+						<then>
+							<sequence key="BiometricDeviceVerification"/>
+							<log level="custom">
+								<property name="After" value="BiometricDeviceVerification"/>
+								<property expression="$ctx:Status" name="BiometricDeviceVerification_Status"/>
+								<property expression="$ctx:Reason" name="BiometricDeviceVerification_Reason"/>
+							</log>
+							<filter regex="OK" source="$ctx:Status">
+								<then>
+									<sequence key="LogRequest"/>
+									<log level="custom">
+										<property name="After" value="LogRequest"/>
+									</log>
+									<sequence key="CheckNewOrUpdate"/>
+									<log level="custom">
+										<property name="After" value="CheckNewOrUpdate"/>
+										<property expression="$ctx:Status" name="CheckNewOrUpdate_Status"/>
+									</log>
+									<property expression="$ctx:Status" name="CheckNewOrUpdateStatus"/>
+									<filter regex="OK" source="$ctx:CheckNewOrUpdateStatus">
+										<then>
+											<sequence key="NewRegistration"/>
+											<log level="custom">
+												<property name="After" value="NewRegistration"/>
+												<property expression="$ctx:Status" name="NewRegistration_Status"/>
+											</log>
+											<property expression="$ctx:Status" name="NewRegistration_Status"/>
+											<property expression="$ctx:Reason" name="NewRegistration_Reason"/>
+											<sequence key="SetRegistration"/>
+											<log level="custom">
+												<property name="After" value="SetRegistration"/>
+											</log>
+											<payloadFactory media-type="xml">
+												<format>
+													<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2">
+														<soap:Header/>
+														<soap:Body>
+															<sch:MARegistrationOut>
+																<sch:Status>$1</sch:Status>
+																<sch:Reason>$2</sch:Reason>
+															</sch:MARegistrationOut>
+														</soap:Body>
+													</soap:Envelope>
+												</format>
+												<args>
+													<arg evaluator="xml" expression="$ctx:Status"/>
+													<arg evaluator="xml" expression="$ctx:Reason"/>
+												</args>
+											</payloadFactory>
+											<enrich>
+												<source clone="true" type="body"/>
+												<target property="LOG_RESPONSE" type="property"/>
+											</enrich>
+											<property name="TIMEOUT" value=""/>
+											<property name="STATUS" value=""/>
+											<property expression="$ctx:LOG_RESPONSE" name="RESPONSE"/>
+											<property name="RESUBMISSION_COUNT" value=""/>
+											<property name="STATUS_CODE" value=""/>
+											<property name="IR_SENT" value=""/>
+											<clone continueParent="true">
+												<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+											</clone>
+											<call-template target="MFSParserLogging">
+												<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+											</call-template>
+											<sequence key="LogResponse"/>
+											<respond/>
+										</then>
+										<else>
+											<sequence key="SetRegistration"/>
+											<log level="custom">
+												<property name="After" value="SetRegistration"/>
+											</log>
+											<payloadFactory media-type="xml">
+												<format>
+													<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2">
+														<soap:Header/>
+														<soap:Body>
+															<sch:MARegistrationOut>
+																<sch:Status>$1</sch:Status>
+																<sch:Reason>$2</sch:Reason>
+															</sch:MARegistrationOut>
+														</soap:Body>
+													</soap:Envelope>
+												</format>
+												<args>
+													<arg evaluator="xml" expression="$ctx:Status"/>
+													<arg evaluator="xml" expression="$ctx:Reason"/>
+												</args>
+											</payloadFactory>
+											<enrich>
+												<source clone="true" type="body"/>
+												<target property="LOG_RESPONSE" type="property"/>
+											</enrich>
+											<property name="TIMEOUT" value=""/>
+											<property name="STATUS" value=""/>
+											<property expression="$ctx:LOG_RESPONSE" name="RESPONSE"/>
+											<property name="RESUBMISSION_COUNT" value=""/>
+											<property name="STATUS_CODE" value=""/>
+											<property name="IR_SENT" value=""/>
+											<clone continueParent="true">
+												<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+											</clone>
+											<call-template target="MFSParserLogging">
+												<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+											</call-template>
+											<sequence key="LogResponse"/>
+											<respond/>
+										</else>
+									</filter>
+								</then>
+								<else>
+									<sequence key="LogRequest"/>
+									<sequence key="SetRegistration"/>
+									<log level="custom">
+										<property name="After" value="SetRegistration"/>
+									</log>
+									<payloadFactory media-type="xml">
+										<format>
+											<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2">
+												<soap:Header/>
+												<soap:Body>
+													<sch:MARegistrationOut>
+														<sch:Status>$1</sch:Status>
+														<sch:Reason>$2</sch:Reason>
+													</sch:MARegistrationOut>
+												</soap:Body>
+											</soap:Envelope>
+										</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:Status"/>
+											<arg evaluator="xml" expression="$ctx:Reason"/>
+										</args>
+									</payloadFactory>
+									<enrich>
+										<source clone="true" type="body"/>
+										<target property="LOG_RESPONSE" type="property"/>
+									</enrich>
+									<property name="TIMEOUT" value=""/>
+									<property name="STATUS" value=""/>
+									<property expression="$ctx:LOG_RESPONSE" name="RESPONSE"/>
+									<property name="RESUBMISSION_COUNT" value=""/>
+									<property name="STATUS_CODE" value=""/>
+									<property name="IR_SENT" value=""/>
+									<clone continueParent="true">
+										<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+									</clone>
+									<call-template target="MFSParserLogging">
+										<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+									</call-template>
+									<sequence key="LogResponse"/>
+									<respond/>
+								</else>
+							</filter>
+						</then>
+						<else>
+							<sequence key="LogRequest"/>
+							<sequence key="SetRegistration"/>
+							<log level="custom">
+								<property name="After" value="SetRegistration"/>
+							</log>
+							<payloadFactory media-type="xml">
+								<format>
+									<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2">
+										<soap:Header/>
+										<soap:Body>
+											<sch:MARegistrationOut>
+												<sch:Status>$1</sch:Status>
+												<sch:Reason>$2</sch:Reason>
+											</sch:MARegistrationOut>
+										</soap:Body>
+									</soap:Envelope>
+								</format>
+								<args>
+									<arg evaluator="xml" expression="$ctx:Status"/>
+									<arg evaluator="xml" expression="$ctx:Reason"/>
+								</args>
+							</payloadFactory>
+							<enrich>
+								<source clone="true" type="body"/>
+								<target property="LOG_RESPONSE" type="property"/>
+							</enrich>
+							<property name="TIMEOUT" value=""/>
+							<property name="STATUS" value=""/>
+							<property expression="$ctx:LOG_RESPONSE" name="RESPONSE"/>
+							<property name="RESUBMISSION_COUNT" value=""/>
+							<property name="STATUS_CODE" value=""/>
+							<property name="IR_SENT" value=""/>
+							<clone continueParent="true">
+								<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+							</clone>
+							<call-template target="MFSParserLogging">
+								<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+							</call-template>
+							<sequence key="LogResponse"/>
+							<respond/>
+						</else>
+					</filter>
+				</then>
+				<else>
+					<log level="custom">
+						<property name="Language" value="Urdu"/>
+					</log>
+					<payloadFactory media-type="xml">
+						<format>
+							<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/">
+								<soapenv:Header/>
+								<soapenv:Body>
+									<web:cnicVerificationEn>
+										<applicationId>220</applicationId>
+										<appUserName>techlogix</appUserName>
+										<appPassword>1QhZGVh4zHUFCHUdnwxTZjXMEeRJxZ/7</appPassword>
+										<userName>?</userName>
+										<customerMsisdn>$1</customerMsisdn>
+										<customerCnic>$2</customerCnic>
+										<location>Punjab</location>
+										<transactionId>$3</transactionId>
+										<appVersion>1.0</appVersion>
+										<field1>$4</field1>
+										<field2>?</field2>
+										<field3>?</field3>
+										<field4>?</field4>
+										<field5>?</field5>
+									</web:cnicVerificationEn>
+								</soapenv:Body>
+							</soapenv:Envelope>
+						</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:C_MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:C_CNIC"/>
+							<arg evaluator="xml" expression="$ctx:TransactionId"/>
+							<arg evaluator="xml" expression="$ctx:ReservedField1"/>
+						</args>
+					</payloadFactory>
+					<enrich>
+						<source clone="true" type="body"/>
+						<target property="LOG_REQUEST" type="property"/>
+					</enrich>
+					<log level="custom">
+						<property name="Before Calling" value="NADRA"/>
+						<property expression="$ctx:LOG_REQUEST" name="Request"/>
+					</log>
+					<property expression="$ctx:uuidId" name="ID"/>
+					<property name="SYSTEM_NAME" value="RHAUSSDRegistration"/>
+					<property name="INTERFACE_NAME" value="GetNADRADataSTC"/>
+					<property expression="$ctx:Timestamp" name="TIMEIN"/>
+					<property expression="$ctx:LOG_REQUEST" name="REQUEST"/>
+					<property expression="$ctx:TransactionId" name="ORDER_ID"/>
+					<property name="TARGET_SYSTEM_NAME" value=""/>
+					<property name="TARGET_INTERFACE_NAME" value=""/>
+					<property expression="$ctx:C_MSISDN" name="MSISDN"/>
+					<property expression="$trp:host" name="HOST"/>
+					<property name="SOURCE" value=""/>
+					<clone continueParent="true">
+						<target sequence="MFS_LOG_REQUEST_SEQUENCE"/>
+					</clone>
+					<call-template target="MFSParserLogging">
+						<with-param name="Reg_value" value="LOG_REQUEST_SEQUENCE_MFS_LOGGING"/>
+					</call-template>
+					<call>
+						<endpoint>
+							<address format="soap11" uri="http://10.50.14.44:80/mfsbioservertest/StcMFSNADRAWebServicePort"/>
+						</endpoint>
+					</call>
+					<property name="messageType" value="text/xml"/>
+					<log level="full">
+						<property name="After Calling" value="NADRA details"/>
+						<property xmlns:ns0="http://services.samples/xsd" xmlns:S="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns2="http://webservice.bioserver.securetech.com/" expression="//ns2:cnicVerificationEnResponse//return" name="NadraResponsestatus"/>
+					</log>
+					<property xmlns:ns0="http://services.samples/xsd" xmlns:S="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns2="http://webservice.bioserver.securetech.com/" expression="//ns2:cnicVerificationEnResponse//return" name="NadraResponsestatus" type="OM"/>
+					<payloadFactory description="xmlrequest" media-type="xml">
+						<format>
+							<id xmlns="">$1</id>
+						</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:NadraResponsestatus"/>
+						</args>
+					</payloadFactory>
+					<enrich>
+						<source clone="true" type="envelope"/>
+						<target property="LOG_RESPONSE" type="property"/>
+					</enrich>
+					<filter xpath="fn:contains($ctx:NadraResponsestatus,'SUCCESS')">
+						<then>
+							<log level="custom">
+								<property xmlns:n1="http://webservice.bioserver.securetech.com/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//id/ApiResponse/status" name="STC_Nadra_Status"/>
+								<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/dateOfBirth" name="STC_Nadra_DOB"/>
+								<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/dateOfExpiry" name="STC_Nadra_CNICExp"/>
+								<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/genderEn" name="STC_Nadra_Gender"/>
+								<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/currentAddressEn" name="STC_Nadra_Address"/>
+								<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/fatherSpouseNameEn" name="STC_Nadra_FatherName"/>
+								<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/motherNameEn" name="STC_Nadra_MotherName"/>
+								<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/placeOfBirth" name="STC_Nadra_PlaceOfBirth"/>
+								<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/nameEn" name="STC_Nadra_Name"/>
+								<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/dateOfBirth" name="STC_Nadra_DateOfBirth"/>
+							</log>
+							<property xmlns:n1="http://webservice.bioserver.securetech.com/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//id/ApiResponse" name="STC_Nadra_Response" type="OM"/>
+							<property xmlns:n1="http://webservice.bioserver.securetech.com/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//id/ApiResponse/status" name="STC_Nadra_Status" type="OM"/>
+							<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/dateOfBirth" name="STC_Nadra_DOB" type="OM"/>
+							<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/dateOfExpiry" name="STC_Nadra_CNICExp" type="OM"/>
+							<filter xpath="fn:contains($ctx:STC_Nadra_CNICExp,'-')">
+								<then>
+									<property xmlns:fn="http://www.w3.org/2005/xpath-functions" expression="fn:replace($ctx:STC_Nadra_CNICExp,'-','')" name="STC_Nadra_CNICExp"/>
+									<log level="custom">
+										<property xmlns:fn="http://www.w3.org/2005/xpath-functions" expression="fn:replace($ctx:STC_Nadra_CNICExp,'-','')" name="STC_Nadra_CNICExp"/>
+									</log>
+								</then>
+							</filter>
+							<filter xpath="fn:contains($ctx:STC_Nadra_DOB,'-')">
+								<then>
+									<property xmlns:fn="http://www.w3.org/2005/xpath-functions" expression="fn:replace($ctx:STC_Nadra_DOB,'-','')" name="STC_Nadra_DOB"/>
+									<log level="custom">
+										<property xmlns:fn="http://www.w3.org/2005/xpath-functions" expression="fn:replace($ctx:STC_Nadra_DOB,'-','')" name="STC_Nadra_DOB"/>
+									</log>
+								</then>
+							</filter>
+							<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/genderEn" name="STC_Nadra_Gender" type="OM"/>
+							<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/currentAddressEn" name="STC_Nadra_Address" type="OM"/>
+							<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/fatherSpouseNameEn" name="STC_Nadra_FatherName" type="OM"/>
+							<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/motherNameEn" name="STC_Nadra_MotherName" type="OM"/>
+							<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/placeOfBirth" name="STC_Nadra_PlaceOfBirth" type="OM"/>
+							<property xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.bioserver.securetech.com/" expression="//id/ApiResponse/success/result/nameEn" name="STC_Nadra_Name" type="OM"/>
+						</then>
+						<else>
+							<log level="custom">
+								<property xmlns:n1="http://webservice.bioserver.securetech.com/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//soap:Envelope/soap:Body/n1:cnicVerificationEnResponse/return/ApiResponse/status" name="STC_Nadra_Status"/>
+								<property xmlns:n1="http://webservice.bioserver.securetech.com/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//id/ApiResponse/error/errorCode" name="STC_Nadra_ErrorCode"/>
+								<property xmlns:n1="http://webservice.bioserver.securetech.com/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//id/ApiResponse/error/errorDescriptions/string" name="STC_Nadra_ErrorDescription"/>
+							</log>
+							<property xmlns:n1="http://webservice.bioserver.securetech.com/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//id/ApiResponse/status" name="STC_Nadra_Status" type="OM"/>
+							<property xmlns:n1="http://webservice.bioserver.securetech.com/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//id/ApiResponse/error/errorCode" name="STC_Nadra_ErrorCode" type="OM"/>
+							<property xmlns:n1="http://webservice.bioserver.securetech.com/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" expression="//id/ApiResponse/error/errorDescriptions/string" name="STC_Nadra_ErrorDescription" type="OM"/>
+						</else>
+					</filter>
+					<property name="TIMEOUT" value=""/>
+					<property name="STATUS" value=""/>
+					<property expression="$ctx:LOG_RESPONSE" name="RESPONSE"/>
+					<property name="RESUBMISSION_COUNT" value=""/>
+					<property name="STATUS_CODE" value=""/>
+					<property name="IR_SENT" value=""/>
+					<clone continueParent="true">
+						<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+					</clone>
+					<call-template target="MFSParserLogging">
+						<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+					</call-template>
+					<filter regex="SUCCESS" source="$ctx:STC_Nadra_Status">
+						<then>
+							<log level="custom">
+								<property name="STC_Nadra_Status" value="SUCCESS"/>
+							</log>
+							<sequence key="GetMSISDNAgainstCNIC"/>
+							<log level="custom">
+								<property name="After" value="GetMSISDNAgainstCNIC"/>
+							</log>
+							<property expression="$ctx:MSISDN" name="Msisdn_against_CNIC"/>
+							<property expression="$ctx:Status" name="GetMSISDNAgainstCNIC_Status"/>
+							<property expression="$ctx:Reason" name="GetMSISDNAgainstCNIC_Reason"/>
+							<filter regex="OK" source="$ctx:Status">
+								<then>
+									<sequence key="BiometricDeviceVerification"/>
+									<log level="custom">
+										<property name="After" value="BiometricDeviceVerification"/>
+									</log>
+									<property expression="$ctx:Status" name="BiometricDeviceVerification_Status"/>
+									<property expression="$ctx:Reason" name="BiometricDeviceVerification_Reason"/>
+									<filter regex="OK" source="$ctx:Status">
+										<then>
+											<sequence key="LogRequest"/>
+											<log level="custom">
+												<property name="After" value="LogRequest"/>
+											</log>
+											<sequence key="CheckNewOrUpdate"/>
+											<log level="custom">
+												<property name="After" value="CheckNewOrUpdate"/>
+											</log>
+											<property expression="$ctx:Status" name="CheckNewOrUpdateStatus"/>
+											<property expression="$ctx:Reason" name="CheckNewOrUpdateReason"/>
+											<filter regex="OK" source="$ctx:CheckNewOrUpdateStatus">
+												<then>
+													<sequence key="NewRegistration"/>
+													<log level="custom">
+														<property name="After" value="NewRegistration"/>
+													</log>
+													<property expression="$ctx:Status" name="NewRegistration_Status"/>
+													<property expression="$ctx:Reason" name="NewRegistration_Reason"/>
+												</then>
+												<else>
+													<sequence key="SetRegistration"/>
+													<log level="custom">
+														<property name="After" value="SetRegistration"/>
+													</log>
+													<payloadFactory media-type="xml">
+														<format>
+															<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2">
+																<soap:Header/>
+																<soap:Body>
+																	<sch:MARegistrationOut>
+																		<sch:Status>$1</sch:Status>
+																		<sch:Reason>$2</sch:Reason>
+																	</sch:MARegistrationOut>
+																</soap:Body>
+															</soap:Envelope>
+														</format>
+														<args>
+															<arg evaluator="xml" expression="$ctx:Status"/>
+															<arg evaluator="xml" expression="$ctx:Reason"/>
+														</args>
+													</payloadFactory>
+													<enrich>
+														<source clone="true" type="body"/>
+														<target property="LOG_RESPONSE" type="property"/>
+													</enrich>
+													<property name="TIMEOUT" value=""/>
+													<property name="STATUS" value=""/>
+													<property expression="$ctx:LOG_RESPONSE" name="RESPONSE"/>
+													<property name="RESUBMISSION_COUNT" value=""/>
+													<property name="STATUS_CODE" value=""/>
+													<property name="IR_SENT" value=""/>
+													<clone continueParent="true">
+														<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+													</clone>
+													<call-template target="MFSParserLogging">
+														<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+													</call-template>
+													<sequence key="LogResponse"/>
+													<log level="custom">
+														<property name="After" value="LogResponse"/>
+													</log>
+													<respond/>
+												</else>
+											</filter>
+										</then>
+										<else>
+											<sequence key="LogRequest"/>
+											<log level="custom">
+												<property name="After" value="LogRequest"/>
+											</log>
+											<sequence key="SetRegistration"/>
+											<log level="custom">
+												<property name="After" value="SetRegistration"/>
+											</log>
+											<payloadFactory media-type="xml">
+												<format>
+													<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2">
+														<soap:Header/>
+														<soap:Body>
+															<sch:MARegistrationOut>
+																<sch:Status>$1</sch:Status>
+																<sch:Reason>$2</sch:Reason>
+															</sch:MARegistrationOut>
+														</soap:Body>
+													</soap:Envelope>
+												</format>
+												<args>
+													<arg evaluator="xml" expression="$ctx:Status"/>
+													<arg evaluator="xml" expression="$ctx:Reason"/>
+												</args>
+											</payloadFactory>
+											<enrich>
+												<source clone="true" type="body"/>
+												<target property="LOG_RESPONSE" type="property"/>
+											</enrich>
+											<property name="TIMEOUT" value=""/>
+											<property name="STATUS" value=""/>
+											<property expression="$ctx:LOG_RESPONSE" name="RESPONSE"/>
+											<property name="RESUBMISSION_COUNT" value=""/>
+											<property name="STATUS_CODE" value=""/>
+											<property name="IR_SENT" value=""/>
+											<clone continueParent="true">
+												<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+											</clone>
+											<call-template target="MFSParserLogging">
+												<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+											</call-template>
+											<sequence key="LogResponse"/>
+											<log level="custom">
+												<property name="After" value="LogResponse"/>
+											</log>
+											<respond/>
+										</else>
+									</filter>
+								</then>
+								<else>
+									<sequence key="LogRequest"/>
+									<log level="custom">
+										<property name="After" value="LogRequest"/>
+									</log>
+									<sequence key="SetRegistration"/>
+									<log level="custom">
+										<property name="After" value="SetRegistration"/>
+									</log>
+									<payloadFactory media-type="xml">
+										<format>
+											<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2">
+												<soap:Header/>
+												<soap:Body>
+													<sch:MARegistrationOut>
+														<sch:Status>$1</sch:Status>
+														<sch:Reason>$2</sch:Reason>
+													</sch:MARegistrationOut>
+												</soap:Body>
+											</soap:Envelope>
+										</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:Status"/>
+											<arg evaluator="xml" expression="$ctx:Reason"/>
+										</args>
+									</payloadFactory>
+									<enrich>
+										<source clone="true" type="body"/>
+										<target property="LOG_RESPONSE" type="property"/>
+									</enrich>
+									<property name="TIMEOUT" value=""/>
+									<property name="STATUS" value=""/>
+									<property expression="$ctx:LOG_RESPONSE" name="RESPONSE"/>
+									<property name="RESUBMISSION_COUNT" value=""/>
+									<property name="STATUS_CODE" value=""/>
+									<property name="IR_SENT" value=""/>
+									<clone continueParent="true">
+										<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+									</clone>
+									<call-template target="MFSParserLogging">
+										<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+									</call-template>
+									<sequence key="LogResponse"/>
+									<log level="custom">
+										<property name="After" value="LogResponse"/>
+									</log>
+									<respond/>
+								</else>
+							</filter>
+						</then>
+						<else>
+							<sequence key="LogRequestNadra"/>
+							<log level="custom">
+								<property name="After" value="LogRequestNadra"/>
+							</log>
+							<sequence key="SetRegistration"/>
+							<log level="custom">
+								<property name="After" value="SetRegistration"/>
+							</log>
+							<payloadFactory media-type="xml">
+								<format>
+									<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:sch="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2">
+										<soap:Header/>
+										<soap:Body>
+											<sch:MARegistrationOut>
+												<sch:Status>$1</sch:Status>
+												<sch:Reason>$2</sch:Reason>
+											</sch:MARegistrationOut>
+										</soap:Body>
+									</soap:Envelope>
+								</format>
+								<args>
+									<arg evaluator="xml" expression="$ctx:Status"/>
+									<arg evaluator="xml" expression="$ctx:Reason"/>
+								</args>
+							</payloadFactory>
+							<enrich>
+								<source clone="true" type="body"/>
+								<target property="LOG_RESPONSE" type="property"/>
+							</enrich>
+							<property name="TIMEOUT" value=""/>
+							<property name="STATUS" value=""/>
+							<property expression="$ctx:LOG_RESPONSE" name="RESPONSE"/>
+							<property name="RESUBMISSION_COUNT" value=""/>
+							<property name="STATUS_CODE" value=""/>
+							<property name="IR_SENT" value=""/>
+							<clone continueParent="true">
+								<target sequence="MFS_LOG_RESPONSE_SEQUENCE"/>
+							</clone>
+							<call-template target="MFSParserLogging">
+								<with-param name="Reg_value" value="LOG_RESPONSE_SEQUENCE_MFS_LOGGING"/>
+							</call-template>
+							<sequence key="LogResponse"/>
+							<log level="custom">
+								<property name="After" value="LogResponse"/>
+							</log>
+							<respond/>
+						</else>
+					</filter>
+				</else>
+			</filter>
+		</inSequence>
+		<outSequence>
+			<send/>
+		</outSequence>
+		<endpoint>
+			<wsdl port="SOAPEventSource" service="MARegistration" uri="http://localhost:10111/Services/RHABiometricRegistration/Interface/MARegistration"/>
+		</endpoint>
+	</target>
+	<publishWSDL>
+		<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://xmlns.example.com/1409054987628/MARegistrationImpl/Services/RHABiometricRegistration/Interface" xmlns:ns0="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap12/" name="Untitled" targetNamespace="http://xmlns.example.com/1409054987628/MARegistrationImpl/Services/RHABiometricRegistration/Interface">
+			<wsdl:types>
+				<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.tibco.com/schemas/Mobilink/SharedResources/Schemas/RHA/Schema.xsd2">
+					<xs:element name="CNIC" type="xs:string"/>
+					<xs:element name="CNICExpiryDate" type="xs:string"/>
+					<xs:element name="CustomerInformation">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element ref="ns0:MSISDN"/>
+								<xs:element ref="ns0:CNIC"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="DOB" type="xs:string"/>
+					<xs:element name="Gender" type="xs:int"/>
+					<xs:element name="IMEI" type="xs:string"/>
+					<xs:element name="KYCData">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element ref="ns0:Language"/>
+								<xs:element ref="ns0:CNIC"/>
+								<xs:element ref="ns0:Name"/>
+								<xs:element ref="ns0:DOB"/>
+								<xs:element ref="ns0:MotherMaidenName"/>
+								<xs:element ref="ns0:PermanentAddress"/>
+								<xs:element ref="ns0:CNICExpiryDate"/>
+								<xs:element ref="ns0:Gender"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="Language" type="xs:int"/>
+					<xs:element name="MARegistrationIn">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element ref="ns0:OperatorInformation"/>
+								<xs:element ref="ns0:CustomerInformation"/>
+								<xs:element ref="ns0:KYCData"/>
+								<xs:element minOccurs="0" ref="ns0:ReservedField1"/>
+								<xs:element minOccurs="0" ref="ns0:ReservedField2"/>
+								<xs:element minOccurs="0" ref="ns0:ReservedField3"/>
+								<xs:element minOccurs="0" ref="ns0:ReservedField4"/>
+								<xs:element minOccurs="0" ref="ns0:ReservedField5"/>
+								<xs:element ref="ns0:TransactionId"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="MARegistrationOut">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element ref="ns0:Status"/>
+								<xs:element ref="ns0:Reason"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="MPIN" type="xs:string"/>
+					<xs:element name="MSISDN" type="xs:string"/>
+					<xs:element name="MotherMaidenName" type="xs:string"/>
+					<xs:element name="Name" type="xs:string"/>
+					<xs:element name="OperatorInformation">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element ref="ns0:IMEI"/>
+								<xs:element ref="ns0:CNIC"/>
+								<xs:element ref="ns0:MPIN"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="PermanentAddress" type="xs:string"/>
+					<xs:element name="Reason" type="xs:string"/>
+					<xs:element name="ReservedField1" type="xs:string"/>
+					<xs:element name="ReservedField2" type="xs:string"/>
+					<xs:element name="ReservedField3" type="xs:string"/>
+					<xs:element name="ReservedField4" type="xs:string"/>
+					<xs:element name="ReservedField5" type="xs:string"/>
+					<xs:element name="Status" type="xs:string"/>
+					<xs:element name="TransactionId" type="xs:string"/>
+				</xs:schema>
+			</wsdl:types>
+			<wsdl:service name="MARegistration">
+				<wsdl:port binding="tns:SOAPEventSourceBinding" name="SOAPEventSource">
+					<soap:address location="http://localhost:10111/Services/RHABiometricRegistration/Interface/MARegistration"/>
+				</wsdl:port>
+			</wsdl:service>
+			<wsdl:portType name="MARegistration">
+				<wsdl:operation name="MARegistration">
+					<wsdl:input message="tns:MessageIn"/>
+					<wsdl:output message="tns:MessageOut"/>
+				</wsdl:operation>
+			</wsdl:portType>
+			<wsdl:binding name="SOAPEventSourceBinding" type="tns:MARegistration">
+				<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+				<wsdl:operation name="MARegistration">
+					<soap:operation soapAction="/Services/RHABiometricRegistration/Interface/MARegistration" soapActionRequired="true" style="document"/>
+					<wsdl:input>
+						<soap:body parts="RegisterIn" use="literal"/>
+					</wsdl:input>
+					<wsdl:output>
+						<soap:body parts="RegisterOut" use="literal"/>
+					</wsdl:output>
+				</wsdl:operation>
+			</wsdl:binding>
+			<wsdl:message name="MessageIn">
+				<wsdl:part element="ns0:MARegistrationIn" name="RegisterIn"/>
+			</wsdl:message>
+			<wsdl:message name="MessageOut">
+				<wsdl:part element="ns0:MARegistrationOut" name="RegisterOut"/>
+			</wsdl:message>
+		</wsdl:definitions>
+	</publishWSDL>
+	<description/>
+</proxy>                                

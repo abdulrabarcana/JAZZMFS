@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="LogResponse">
+   <log level="full">
+      <property name="property_nameFirst" value="INSIDE Log Response"/>
+   </log>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="DateTime"
+             expression="get-property('SYSTEM_DATE','yyyyMMddHHmmss')"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="SRCTRANSACTION"
+             expression="$ctx:TransactionId"/>
+   <property name="TRANSACTIONTYPE" value="Biometric-MA"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="MFSSTATUS"
+             expression="$ctx:Status"/>
+   <property xmlns:ns="http://org.apache.synapse/xsd"
+             name="MFSREASON"
+             expression="$ctx:Reason"/>
+   <class name="com.arcana.biometric.LogBiometricResponse"/>
+   <log level="custom">
+      <property xmlns:ns="http://org.apache.synapse/xsd"
+                name="Status"
+                expression="$ctx:STATUS"/>
+      <property xmlns:ns="http://org.apache.synapse/xsd"
+                name="Reason"
+                expression="$ctx:REASON"/>
+   </log>
+</sequence>
